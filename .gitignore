@@ -1,1 +1,4 @@
 /node_modules
+/images-output
+/images-input/*
+!/images-input/.gitkeep
