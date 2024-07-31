@@ -27,29 +27,33 @@ const COMPRESSION_QUALITY = 80; // Quality of the compressed images.
         const image = sharp(inputFilePath);
         const metadata = await image.metadata();
 
-        if (metadata.width > 960) {
-            await image.resize({ width: 960 }).toFile(outputFilePath);
+        if (metadata.width > MAX_WIDTH) {
+            await image.resize({ width: MAX_WIDTH }).toFile(outputFilePath);
         } else {
             await fs.copyFile(inputFilePath, outputFilePath);
         }
     }
 
-    // Dynamically import imagemin and its plugins for compression
-    const imagemin = (await import('imagemin')).default;
-    const imageminMozjpeg = (await import('imagemin-mozjpeg')).default;
-    const imageminPngquant = (await import('imagemin-pngquant')).default;
+// Dynamically import imagemin and its plugins for compression
+const imagemin = (await import('imagemin')).default;
+const imageminMozjpeg = (await import('imagemin-mozjpeg')).default;
+const imageminPngquant = (await import('imagemin-pngquant')).default;
 
-    // Imagemin compression
-    const convertedImages = await imagemin([`${resizedDir}/*.{jpg,png}`], {
-        destination: outputDir,
-        plugins: [
-            imageminMozjpeg({ quality: 80 }),
-            imageminPngquant()
-        ]
-    });
+// Function to map COMPRESSION_QUALITY to a range between 0 and 1 for imageminPngquant
+const mapQuality = (quality) => Math.min(Math.max(quality / 100, 0), 1);
 
-    console.log('Converted images:', convertedImages);
+// Imagemin compression
+const convertedImages = await imagemin([`${resizedDir}/*.{jpg,jpeg,png}`], {
+    destination: outputDir,
+    plugins: [
+        imageminMozjpeg({ quality: COMPRESSION_QUALITY }),
+        imageminPngquant({ quality: [mapQuality(COMPRESSION_QUALITY), mapQuality(COMPRESSION_QUALITY)] })
 
-    // Remove the temporary resized images directory
-    await fs.rm(resizedDir, { recursive: true });
+    ]
+});
+
+console.log('Converted images:', convertedImages);
+
+// Remove the temporary resized images directory
+await fs.rm(resizedDir, { recursive: true });
 })();
