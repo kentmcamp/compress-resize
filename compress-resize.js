@@ -6,14 +6,14 @@ const inputDir = path.join(__dirname, 'images-input');
 const outputDir = path.join(__dirname, 'images-output');
 const fallbacksDir = path.join(outputDir, 'fallbacks');
 const MAX_WIDTH = 960;
-const COMPRESSION_QUALITY = 80;
+const COMPRESSION_QUALITY = 85;
 
 (async () => {
   // Ensure the output and fallbacks directories exist
   await fs.promises.mkdir(outputDir, { recursive: true });
   await fs.promises.mkdir(fallbacksDir, { recursive: true });
 
-  const imageFiles = fs.readdirSync(inputDir).filter(file => /\.(jpe?g|png|gif|webp)$/i.test(file));
+  const imageFiles = fs.readdirSync(inputDir).filter(file => /\.(jpe?g|png|gif|webp|jfif|tiff|bmp)$/i.test(file));
 
   // Resize images using sharp and save them to the output directory
   for (const file of imageFiles) {
